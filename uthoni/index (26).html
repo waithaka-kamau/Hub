@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8a3b12"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><title>Ūthoni Dowry Ledger</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#faf6ef;--card:#fff;--ink:#2a2118;--mut:#7a6d5e;--line:#e9dfd0;--pri:#8a3b12;--pri2:#f3e2d3;--ok:#2f7d4f;--warn:#b7791f;--bad:#b3261e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#17130f;--card:#231d17;--ink:#f1e9dd;--mut:#a79a89;--line:#372e25;--pri:#e8915a;--pri2:#3a2a1f;--ok:#6cc58d;--warn:#e3b04b;--bad:#f2877f}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#17130f;--card:#231d17;--ink:#f1e9dd;--mut:#a79a89;--line:#372e25;--pri:#e8915a;--pri2:#3a2a1f;--ok:#6cc58d;--warn:#e3b04b;--bad:#f2877f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:76px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:12px 16px 8px;z-index:5;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:19px;margin:0}h1 small{display:block;font-size:12px;font-weight:400;color:var(--mut)}
+main{padding:0 14px 20px;max-width:720px;margin:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font-size:18px}.stat span{font-size:12px;color:var(--mut)}
+h2{font-size:15px;margin:4px 0 10px}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;background:var(--pri)}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.mut{color:var(--mut);font-size:12px}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.item{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border:0}.item .m{flex:1;min-width:0}.item .t{font-weight:600;white-space:nowrap}
+.chip{display:inline-block;font-size:11px;background:var(--pri2);color:var(--pri);padding:1px 8px;border-radius:10px}
+.chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:none;color:#fff;font-size:14px;flex:none}
+.chk.on{background:var(--ok);border-color:var(--ok)}
+input,select,textarea,button{font:inherit;color:var(--ink)}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);margin:3px 0 10px}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
+button.g{background:var(--pri2);color:var(--pri);border:0;border-radius:10px;padding:8px 12px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}.filters input{grid-column:1/3}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:6}
+nav button{flex:1;background:none;border:0;padding:9px 0 8px;font-size:11px;color:var(--mut)}nav button span{display:block;font-size:19px}
+nav button.on{color:var(--pri);font-weight:700}
+.fab{position:fixed;right:16px;bottom:calc(74px + env(safe-area-inset-bottom,0px));width:54px;height:54px;border-radius:50%;font-size:28px;z-index:7;box-shadow:0 4px 14px #0004;padding:0}
+#sheet{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;z-index:20}
+#sheet.show{display:flex}#sheet>div{background:var(--bg);width:100%;max-width:720px;margin:auto;border-radius:18px 18px 0 0;padding:16px;max-height:92%;overflow:auto}
+label{font-size:12px;color:var(--mut)}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+textarea{min-height:110px;font-size:12px}.scroll{overflow-x:auto}
+</style></head><body>
+<header><h1>Ūthoni Dowry Ledger<small>Budget · payments · expenses · debts (KES)</small></h1><button class="g" id="theme">◐</button></header>
+<main id="app"></main>
+<button class="b fab" id="fab">+</button>
+<nav id="nav"></nav>
+<div id="sheet"><div id="sheetc"></div></div>
+<script>
+const K='uthoni-ledger-v1';
+const d=(s)=>s;const uid=()=>Math.random().toString(36).slice(2,9);
+const seed=()=>{
+const D='2018-08-18',e=[];const add=(head,date,desc,qty,cost,paid=true)=>e.push({id:uid(),head,date,desc,qty,cost,paid});
+add('mirongo','2010-01-01','Goats payment (year 2010)',1,13000);add('mirongo','2017-12-25','Goats payment',1,20000);add('mirongo',D,'Goats payment',1,64500);
+[['Big sufuria',5500],['Kabuti (suit)',5500],['Blanket',3400],['Pullover',1500],['Dress',2500],['Shirt',1000]].forEach(x=>add('maruta',D,x[0],1,x[1]));
+[['Milk (10 litres)',10,50],['Sugar',5,200],['Potatoes (4 debes)',4,500],['Njahi (5 kg)',5,100],['Rice (10 kg)',10,85],['Goat meat',10,400],['Carrots (debe)',1,2000],['Onions (3 kg)',3,80],['Tomatoes (2 kg)',1,500],['Flour',12,125],['Cooking fat (10 kg)',1,1500],['Charcoal',1,2000],['Sodas (5 crates)',5,700],['Juice',1,700],['Additional money',1,4000]].forEach(x=>add('food',D,x[0],x[1],x[2]));
+[['Atumia money',3000],['Leso/shawls for atumia',1680],['Key to open the gate',1000],['Soda opener + soda',1000],['Porridge (ūcūrū)',1000]].forEach(x=>add('atumia',D,x[0],1,x[1]));
+add('athuri',D,'Money for elders (njohi)',1,5000);
+[['Green bananas x2',1,1000],['Maize flour (1kg x24)',1,910],['Wheat flour (1kg x24)',1,1520],['Arrow roots (ndūma)',1,1000],['Cooking oil (10 kg)',1,1400],['Rice (25 kg)',1,1800]].forEach(x=>add('ikumbi',D,x[0],x[1],x[2]));
+return{heads:[
+{id:'mirongo',name:'Mirongo (goats)',budget:97500,group:'Dowry'},
+{id:'maruta',name:'Maruta (items)',budget:19400,group:'Dowry'},
+{id:'food',name:'Food budget',budget:24790,group:'Event'},
+{id:'atumia',name:'Atumia',budget:7680,group:'Event'},
+{id:'athuri',name:'Athuri',budget:5000,group:'Event'},
+{id:'ikumbi',name:'Ikūmbi',budget:7630,group:'Event'}],
+entries:e,debts:[{id:uid(),desc:'Tabby',amount:11000,paid:0,date:''}],theme:''}};
+let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S||!S.heads)S=seed();
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(K+'-ts',Date.now())}catch(e){}};
+const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>'KES '+Math.round(n).toLocaleString('en-KE');
+const tot=e=>(+e.qty||0)*(+e.cost||0);
+const sum=a=>a.reduce((s,x)=>s+tot(x),0);
+const head=id=>S.heads.find(h=>h.id===id)||{name:'Other',budget:0};
+const fd=s=>{if(!s)return'';const x=new Date(s+'T00:00:00');return isNaN(x)?s:x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})};
+let tab='home',F={h:'',s:'',q:''};
+const tabs=[['home','◎','Home'],['entries','☰','Entries'],['heads','▤','Vote heads'],['debts','⚖','Debts'],['more','⋯','More']];
+function applyTheme(){const r=document.documentElement;S.theme?r.setAttribute('data-theme',S.theme):r.removeAttribute('data-theme')}
+$('#theme').onclick=()=>{const dark=S.theme?S.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;S.theme=dark?'light':'dark';save();applyTheme()};
+function nav(){$('#nav').innerHTML=tabs.map(t=>`<button class="${tab===t[0]?'on':''}" onclick="go('${t[0]}')"><span>${t[1]}</span>${t[2]}</button>`).join('');$('#fab').style.display=['home','entries','debts'].includes(tab)?'block':'none'}
+function go(t){tab=t;render();scrollTo(0,0)}
+function render(){nav();$('#app').innerHTML=({home,entries,heads,debts,more})[tab]()}
+function home(){
+const all=S.entries,paid=sum(all.filter(e=>e.paid)),pend=sum(all.filter(e=>!e.paid)),bud=S.heads.reduce((s,h)=>s+(+h.budget||0),0);
+const debtOut=S.debts.reduce((s,x)=>s+x.amount-(x.paid||0),0);
+const grp=g=>{const hs=S.heads.filter(h=>h.group===g).map(h=>h.id);return sum(all.filter(e=>hs.includes(e.head)))};
+const dates={};all.filter(e=>e.paid).forEach(e=>{dates[e.date]=(dates[e.date]||0)+tot(e)});
+const dl=Object.entries(dates).sort((a,b)=>b[0]<a[0]?-1:1);
+return`<div class="grid">
+<div class="stat"><span>Total budget</span><b>${fmt(bud)}</b></div>
+<div class="stat"><span>Paid / spent</span><b class="ok">${fmt(paid)}</b></div>
+<div class="stat"><span>Pending (not yet paid)</span><b class="warn">${fmt(pend)}</b></div>
+<div class="stat"><span>Budget balance</span><b class="${bud-paid-pend<0?'bad':''}">${fmt(bud-paid-pend)}</b></div></div>
+<div class="card" style="margin-top:12px"><h2>Dowry vs event costs</h2>
+<div class="row"><span>Dowry (goats + items)</span><b>${fmt(grp('Dowry'))}</b></div>
+<div class="row"><span>Event expenses</span><b>${fmt(grp('Event'))}</b></div>
+<div class="row" style="border-top:1px solid var(--line);margin-top:8px;padding-top:8px"><b>Grand total</b><b>${fmt(grp('Dowry')+grp('Event'))}</b></div></div>
+<div class="card"><h2>Vote heads</h2>${S.heads.map(h=>{const es=all.filter(e=>e.head===h.id),t=sum(es),p=h.budget?Math.min(100,t/h.budget*100):0;
+return`<div style="margin-bottom:10px"><div class="row"><span>${esc(h.name)}</span><span class="mut">${fmt(t)} / ${fmt(h.budget)}</span></div><div class="bar"><i style="width:${p}%;${t>h.budget?'background:var(--bad)':''}"></i></div></div>`}).join('')}</div>
+<div class="card"><h2>Spent by date</h2>${dl.map(x=>`<div class="row item"><span>${fd(x[0])}</span><b>${fmt(x[1])}</b></div>`).join('')||'<span class="mut">No payments yet</span>'}</div>
+<div class="card row"><span>Outstanding debts</span><b class="${debtOut?'bad':''}">${fmt(debtOut)}</b></div>`}
+function entries(){
+let l=S.entries.filter(e=>(!F.h||e.head===F.h)&&(!F.s||(F.s==='paid')===!!e.paid)&&(!F.q||(e.desc||'').toLowerCase().includes(F.q.toLowerCase())));
+l.sort((a,b)=>(b.date||'')<(a.date||'')?-1:1);
+return`<div class="filters"><input placeholder="Search…" value="${esc(F.q)}" oninput="F.q=this.value;list()">
+<select onchange="F.h=this.value;list()"><option value="">All vote heads</option>${S.heads.map(h=>`<option value="${h.id}" ${F.h===h.id?'selected':''}>${esc(h.name)}</option>`).join('')}</select>
+<select onchange="F.s=this.value;list()"><option value="">Paid &amp; pending</option><option value="paid" ${F.s==='paid'?'selected':''}>Paid</option><option value="pend" ${F.s==='pend'?'selected':''}>Pending</option></select></div>
+<div class="card" id="list">${rows(l)}</div>`}
+function rows(l){return`<div class="mut" style="margin-bottom:4px">${l.length} entries · ${fmt(sum(l))}</div>`+l.map(e=>`<div class="item"><button class="chk ${e.paid?'on':''}" onclick="tg('${e.id}')">${e.paid?'✓':''}</button>
+<div class="m" onclick="editE('${e.id}')"><div>${esc(e.desc)}</div><div class="mut"><span class="chip">${esc(head(e.head).name)}</span> ${fd(e.date)}${e.qty!=1?' · '+e.qty+' × '+Math.round(e.cost).toLocaleString():''}</div></div><div class="t">${Math.round(tot(e)).toLocaleString()}</div></div>`).join('')||'<span class="mut">Nothing here yet</span>'}
+function list(){let l=S.entries.filter(e=>(!F.h||e.head===F.h)&&(!F.s||(F.s==='paid')===!!e.paid)&&(!F.q||(e.desc||'').toLowerCase().includes(F.q.toLowerCase())));l.sort((a,b)=>(b.date||'')<(a.date||'')?-1:1);$('#list').innerHTML=rows(l)}
+function tg(id){const e=S.entries.find(x=>x.id===id);e.paid=!e.paid;save();tab==='entries'?list():render()}
+function heads(){return`<div class="card"><h2>Vote heads &amp; budgets</h2><p class="mut">Tap a budget to change it. “Group” splits dowry from event costs on Home.</p>
+${S.heads.map(h=>`<div class="item"><div class="m"><b>${esc(h.name)}</b><div class="mut">${S.entries.filter(e=>e.head===h.id).length} entries · ${fmt(sum(S.entries.filter(e=>e.head===h.id)))} · ${h.group}</div></div>
+<input style="width:110px;margin:0" type="number" value="${h.budget}" onchange="hb('${h.id}',this.value)"><button class="g" onclick="delH('${h.id}')">✕</button></div>`).join('')}
+<h2 style="margin-top:14px">Add vote head</h2><input id="hn" placeholder="Name (e.g. Photography)"><div class="two"><input id="hbud" type="number" placeholder="Budget"><select id="hg"><option>Event</option><option>Dowry</option></select></div><button class="b" onclick="addH()">Add vote head</button></div>`}
+function hb(id,v){head(id).budget=+v||0;save()}
+function addH(){const n=$('#hn').value.trim();if(!n)return;S.heads.push({id:uid(),name:n,budget:+$('#hbud').value||0,group:$('#hg').value});save();render()}
+function delH(id){if(S.entries.some(e=>e.head===id))return alert('Move or delete this vote head’s entries first.');S.heads=S.heads.filter(h=>h.id!==id);save();render()}
+function debts(){const out=S.debts.reduce((s,x)=>s+x.amount-(x.paid||0),0);
+return`<div class="card"><div class="row"><h2>Debts</h2><b class="${out?'bad':'ok'}">${fmt(out)} owed</b></div>${S.debts.map(x=>`<div class="item"><div class="m" onclick="editD('${x.id}')"><div>${esc(x.desc)}</div><div class="mut">${fmt(x.amount)} · repaid ${fmt(x.paid||0)}</div></div><b class="${x.amount-x.paid>0?'bad':'ok'}">${Math.round(x.amount-(x.paid||0)).toLocaleString()}</b></div>`).join('')||'<span class="mut">No debts recorded</span>'}</div>`}
+function more(){return`<div class="card"><h2>Backup &amp; restore</h2><p class="mut">Data is saved on this device. Copy the backup text and keep it somewhere safe (WhatsApp to yourself, Notes). Paste it below to restore.</p>
+<textarea id="bk" readonly>${esc(JSON.stringify(S))}</textarea><div class="two"><button class="b" onclick="dl('json')">Download backup</button><button class="g" onclick="dl('csv')">Download CSV</button></div><div class="two" style="margin-top:8px"><button class="g" onclick="cp('bk')">Copy backup text</button><button class="g" onclick="installApp()" id="inst" style="display:none">Install app</button></div></div>
+<div class="card"><h2>Restore</h2><input type="file" id="rf" accept=".json,application/json"><textarea id="rs" placeholder="…or paste backup text here"></textarea><button class="b" onclick="restore()">Restore from backup</button></div>
+<div class="card"><h2>Reset</h2><button class="g" onclick="if(confirm('Reset to the original spreadsheet data? Your changes will be lost.')){S=seed();save();render()}">Reset to original data</button></div>`}
+function cp(id){const t=$('#'+id);t.focus();t.select();try{navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}alert('Copied')}
+function dl(k){let t,n,m;if(k==='json'){t=JSON.stringify(S);n='uthoni-ledger-backup.json';m='application/json'}else{t=csvText();n='uthoni-ledger.csv';m='text/csv'}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
+function csvText(){const r=[['Date','Vote head','Description','Qty','Unit cost','Total','Paid']].concat(S.entries.map(e=>[e.date,head(e.head).name,e.desc,e.qty,e.cost,tot(e),e.paid?'yes':'no']));
+const t=r.map(x=>x.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');return t}
+function restore(){const f=$('#rf').files[0];if(f&&!$('#rs').value){f.text().then(t=>{$('#rs').value=t;restore()});return}try{const j=JSON.parse($('#rs').value);if(!j.heads||!j.entries)throw 0;S=j;save();alert('Restored');render()}catch(e){alert('That does not look like a valid backup.')}}
+function sheet(h){$('#sheetc').innerHTML=h;$('#sheet').classList.add('show')}
+function close_(){$('#sheet').classList.remove('show')}
+$('#sheet').onclick=e=>{if(e.target.id==='sheet')close_()};
+function editE(id){const e=id?S.entries.find(x=>x.id===id):{head:F.h||S.heads[0].id,date:new Date().toISOString().slice(0,10),desc:'',qty:1,cost:'',paid:true};
+sheet(`<h2>${id?'Edit':'New'} entry</h2><label>Description</label><input id="f1" value="${esc(e.desc)}">
+<label>Vote head</label><select id="f2">${S.heads.map(h=>`<option value="${h.id}" ${h.id===e.head?'selected':''}>${esc(h.name)}</option>`).join('')}</select>
+<div class="two"><div><label>Quantity</label><input id="f3" type="number" value="${e.qty}"></div><div><label>Unit cost</label><input id="f4" type="number" value="${e.cost}"></div></div>
+<label>Date</label><input id="f5" type="date" value="${e.date||''}"><label>Status</label><select id="f6"><option value="1" ${e.paid?'selected':''}>Paid</option><option value="0" ${!e.paid?'selected':''}>Pending</option></select>
+<div class="two"><button class="b" onclick="saveE('${id||''}')">Save</button>${id?`<button class="g" onclick="delE('${id}')">Delete</button>`:'<button class="g" onclick="close_()">Cancel</button>'}</div>`)}
+function saveE(id){const v={desc:$('#f1').value.trim(),head:$('#f2').value,qty:+$('#f3').value||1,cost:+$('#f4').value||0,date:$('#f5').value,paid:$('#f6').value==='1'};if(!v.desc)return;
+if(id)Object.assign(S.entries.find(x=>x.id===id),v);else S.entries.push({id:uid(),...v});save();close_();render()}
+function delE(id){if(confirm('Delete this entry?')){S.entries=S.entries.filter(x=>x.id!==id);save();close_();render()}}
+function editD(id){const x=id?S.debts.find(y=>y.id===id):{desc:'',amount:'',paid:0,date:''};
+sheet(`<h2>${id?'Edit':'New'} debt</h2><label>Owed to / description</label><input id="d1" value="${esc(x.desc)}"><div class="two"><div><label>Amount</label><input id="d2" type="number" value="${x.amount}"></div><div><label>Repaid so far</label><input id="d3" type="number" value="${x.paid||0}"></div></div>
+<div class="two"><button class="b" onclick="saveD('${id||''}')">Save</button>${id?`<button class="g" onclick="delD('${id}')">Delete</button>`:'<button class="g" onclick="close_()">Cancel</button>'}</div>`)}
+function saveD(id){const v={desc:$('#d1').value.trim(),amount:+$('#d2').value||0,paid:+$('#d3').value||0};if(!v.desc)return;if(id)Object.assign(S.debts.find(y=>y.id===id),v);else S.debts.push({id:uid(),date:'',...v});save();close_();render()}
+function delD(id){if(confirm('Delete this debt?')){S.debts=S.debts.filter(y=>y.id!==id);save();close_();render()}}
+$('#fab').onclick=()=>tab==='debts'?editD():editE();
+let dp;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;const b=$('#inst');if(b)b.style.display=''});
+function installApp(){if(dp){dp.prompt();dp=null}}
+if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+/* ===== PDF report + delete protection ===== */
+S.trash=S.trash||[];
+const SK=K+'-snaps';
+const snaps=()=>{try{return JSON.parse(localStorage.getItem(SK))||[]}catch(e){return[]}};
+function snap(force){try{const a=snaps();if(force||!a.length||Date.now()-a[0].ts>12*3600e3){a.unshift({ts:Date.now(),json:JSON.stringify(S)});localStorage.setItem(SK,JSON.stringify(a.slice(0,8)))}}catch(e){}}
+snap();
+const exp=()=>JSON.stringify({...S,delPin:undefined});
+function needPin(why){
+if(!S.delPin){const p=prompt('Set a Delete PIN (4 or more digits). You will need it to delete, restore or reset anything.');if(!p||!/^\d{4,}$/.test(p.trim())){alert('The PIN must be 4 or more digits. Nothing was changed.');return false}
+if(prompt('Type the PIN again to confirm')!==p){alert('The PINs did not match. Nothing was changed.');return false}S.delPin=p.trim();save()}
+const e=prompt(why+'\n\nEnter your Delete PIN:');if(e===null)return false;if(e.trim()!==S.delPin){alert('Wrong PIN. Nothing was changed.');return false}return true}
+const toTrash=(type,item)=>S.trash.unshift({id:uid(),type,item,ts:Date.now()});
+function delE(id){const x=S.entries.find(e=>e.id===id);if(!x||!needPin('Delete the entry “'+x.desc+'”? It will move to the Recycle bin.'))return;S.entries=S.entries.filter(e=>e.id!==id);toTrash('entry',x);save();close_();render()}
+function delD(id){const x=S.debts.find(e=>e.id===id);if(!x||!needPin('Delete the debt “'+x.desc+'”? It will move to the Recycle bin.'))return;S.debts=S.debts.filter(e=>e.id!==id);toTrash('debt',x);save();close_();render()}
+function delH(id){if(S.entries.some(e=>e.head===id))return alert('Move or delete this vote head’s entries first.');const x=head(id);if(!needPin('Delete the vote head “'+x.name+'”?'))return;S.heads=S.heads.filter(h=>h.id!==id);toTrash('head',x);save();render()}
+function untrash(id){const t=S.trash.find(x=>x.id===id);if(!t)return;if(t.type==='entry')S.entries.push(t.item);else if(t.type==='debt')S.debts.push(t.item);else S.heads.push(t.item);S.trash=S.trash.filter(x=>x.id!==id);save();render()}
+function emptyBin(){if(needPin('Permanently erase everything in the Recycle bin. This cannot be undone.')&&prompt('Type ERASE to confirm')==='ERASE'){snap(true);S.trash=[];save();render()}}
+function restore(){const f=$('#rf').files[0];if(f&&!$('#rs').value){f.text().then(t=>{$('#rs').value=t;restore()});return}
+try{const j=JSON.parse($('#rs').value);if(!j.heads||!j.entries)throw 0;if(!needPin('Restoring replaces everything on this device with the backup.'))return;snap(true);j.delPin=S.delPin;j.trash=j.trash||[];S=j;save();alert('Restored');render()}catch(e){alert('That does not look like a valid backup.')}}
+function restoreSnap(i){const a=snaps();if(!a[i])return;const js=a[i].json;if(!needPin('Replace the current data with the snapshot from '+new Date(a[i].ts).toLocaleString()+'?'))return;snap(true);const p=S.delPin;S=JSON.parse(js);S.delPin=p;S.trash=S.trash||[];save();render()}
+function resetAll(){if(needPin('RESET erases all your data and loads the original spreadsheet data.')&&prompt('Type RESET ALL to confirm')==='RESET ALL'){snap(true);const p=S.delPin,t=S.trash;S=seed();S.delPin=p;S.trash=t;save();render()}}
+function chPin(){if(!S.delPin){needPin('');return render()}if(!needPin('Change the Delete PIN.'))return;const n=prompt('New Delete PIN (4 or more digits)');if(n&&/^\d{4,}$/.test(n.trim())){S.delPin=n.trim();save();alert('PIN changed')}}
+function dl(k){let t,n,m;if(k==='json'){t=exp();n='uthoni-ledger-backup.json';m='application/json'}else{t=csvText();n='uthoni-ledger.csv';m='text/csv'}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
+const loadJs=u=>new Promise((r,j)=>{const s=document.createElement('script');s.src=u;s.onload=r;s.onerror=j;document.head.appendChild(s)});
+async function pdf(){
+try{if(!window.jspdf){await loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js')}}catch(e){return alert('The PDF tool needs internet the first time. Connect and try again.')}
+const doc=new window.jspdf.jsPDF({unit:'pt',format:'a4'}),hid=$('#pdfh').value,A=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,''),n=x=>Math.round(x).toLocaleString('en-US');
+const es=S.entries.filter(e=>!hid||e.head===hid).sort((a,b)=>(a.date||'')<(b.date||'')?-1:1),hs=S.heads.filter(h=>!hid||h.id===hid);
+const paid=sum(es.filter(e=>e.paid)),pend=sum(es.filter(e=>!e.paid)),bud=hs.reduce((s,h)=>s+(+h.budget||0),0),hdr={fillColor:[138,59,18]},R={halign:'right'};
+doc.setFontSize(18);doc.text('Uthoni Dowry Ledger',40,48);doc.setFontSize(10);doc.setTextColor(110);
+doc.text('Generated '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+(hid?'  |  '+A(head(hid).name):'')+'  |  Amounts in KES',40,64);
+doc.autoTable({startY:80,head:[['Budget','Paid','Pending','Balance']],body:[[n(bud),n(paid),n(pend),n(bud-paid-pend)]],theme:'grid',headStyles:hdr,styles:{fontSize:11,halign:'center'}});
+doc.autoTable({startY:doc.lastAutoTable.finalY+18,head:[['Vote head','Budget','Entries','Paid','Pending','Balance']],body:hs.map(h=>{const x=es.filter(e=>e.head===h.id),p=sum(x.filter(e=>e.paid)),q=sum(x.filter(e=>!e.paid));return[A(h.name),n(h.budget),x.length,n(p),n(q),n(h.budget-p-q)]}),styles:{fontSize:10},headStyles:hdr,columnStyles:{1:R,3:R,4:R,5:R}});
+doc.autoTable({startY:doc.lastAutoTable.finalY+18,head:[['Date','Vote head','Description','Qty','Unit','Total','Status']],body:es.map(e=>[e.date||'',A(head(e.head).name),A(e.desc),e.qty,n(e.cost),n(tot(e)),e.paid?'Paid':'Pending']),foot:[['','','Total','','',n(sum(es)),'']],styles:{fontSize:9},headStyles:hdr,footStyles:{fillColor:[240,226,211],textColor:20},columnStyles:{3:R,4:R,5:R}});
+if(!hid&&S.debts.length)doc.autoTable({startY:doc.lastAutoTable.finalY+18,head:[['Debt','Amount','Repaid','Outstanding']],body:S.debts.map(d=>[A(d.desc),n(d.amount),n(d.paid||0),n(d.amount-(d.paid||0))]),styles:{fontSize:10},headStyles:hdr,columnStyles:{1:R,2:R,3:R}});
+const pc=doc.internal.getNumberOfPages();for(let i=1;i<=pc;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(120);doc.text('Page '+i+' of '+pc,doc.internal.pageSize.width-40,doc.internal.pageSize.height-20,{align:'right'})}
+doc.save('uthoni-ledger-'+new Date().toISOString().slice(0,10)+'.pdf')}
+function more(){const sn=snaps(),tr=S.trash;return`<div class="card"><h2>PDF report</h2><p class="mut">Summary, vote heads, every entry and debts, ready to print or share.</p>
+<select id="pdfh"><option value="">Full report (all vote heads)</option>${S.heads.map(h=>`<option value="${h.id}">${esc(h.name)} only</option>`).join('')}</select><button class="b" style="width:100%" onclick="pdf()">Download PDF</button></div>
+<div class="card"><h2>Backup &amp; restore</h2><p class="mut">Keep a backup file somewhere safe (WhatsApp to yourself, Drive).</p>
+<textarea id="bk" readonly>${esc(exp())}</textarea><div class="two"><button class="b" onclick="dl('json')">Download backup</button><button class="g" onclick="dl('csv')">Download CSV</button></div>
+<div class="two" style="margin-top:8px"><button class="g" onclick="cp('bk')">Copy backup text</button><button class="g" onclick="installApp()" id="inst" style="display:none">Install app</button></div></div>
+<div class="card"><h2>Restore</h2><input type="file" id="rf" accept=".json,application/json"><textarea id="rs" placeholder="…or paste backup text here"></textarea><button class="b" style="width:100%" onclick="restore()">Restore from backup</button></div>
+<div class="card"><h2>🗑 Recycle bin</h2><p class="mut">Deleted items wait here until the bin is erased with your Delete PIN.</p>
+${tr.map(t=>`<div class="item"><div class="m"><div>${esc(t.type==='head'?t.item.name:t.item.desc)}</div><div class="mut">${t.type} · ${t.type==='entry'?fmt(tot(t.item))+' · ':t.type==='debt'?fmt(t.item.amount)+' · ':''}deleted ${new Date(t.ts).toLocaleDateString('en-GB')}</div></div><button class="g" onclick="untrash('${t.id}')">Restore</button></div>`).join('')||'<span class="mut">Empty</span>'}
+${tr.length?'<button class="g" style="margin-top:10px" onclick="emptyBin()">Erase bin permanently…</button>':''}</div>
+<div class="card"><h2>🛡 Data safety</h2><p class="mut">Deleting, restoring or resetting needs your Delete PIN. A safety snapshot is also saved automatically every 12 hours and before any restore or reset.</p>
+<button class="g" onclick="chPin()">${S.delPin?'Change Delete PIN':'Set Delete PIN'}</button>
+<h2 style="margin-top:16px">Safety snapshots</h2>${sn.map((x,i)=>`<div class="item"><div class="m">${new Date(x.ts).toLocaleString('en-GB')}</div><button class="g" onclick="restoreSnap(${i})">Restore</button></div>`).join('')||'<span class="mut">None yet</span>'}
+<h2 style="margin-top:16px">Reset</h2><button class="g" style="color:var(--bad)" onclick="resetAll()">Reset to original data…</button></div>`}
+applyTheme();render();
+</script></body></html>
