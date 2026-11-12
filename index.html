@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#134e5e"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Waithaka Family Hub</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{box-sizing:border-box;--bg:#f3f1ea;--card:#fff;--ink:#16262b;--mut:#66777c;--line:#dfdccf;--pri:#134e5e;--gold:#d4a017}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+header{background:var(--pri);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;border-bottom:3px solid var(--gold)}
+header h1{font-size:17px;margin:0;flex:1}header small{display:block;font-weight:400;font-size:11px;opacity:.8}
+header button{background:#ffffff22;color:#fff;border:0;border-radius:10px;padding:8px 11px;font:inherit;font-size:15px}
+main{max-width:780px;margin:auto;padding:14px 14px 40px}
+h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:18px 2px 8px}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+.t{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-height:112px;cursor:pointer;border-top:3px solid var(--gold)}
+.t:active{transform:scale(.97)}.t i{font-style:normal;font-size:28px;display:block;margin-bottom:6px}.t b{display:block;font-size:14px}.t span{font-size:12px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;margin:3px 0 10px}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:10px;padding:12px;font:inherit;font-weight:600;width:100%}
+button.g2{background:#e8f0f1;color:var(--pri);border:0;border-radius:10px;padding:8px 12px;font:inherit}
+.lg{max-width:360px;margin:12vh auto 0;text-align:center}.lg .logo{width:84px;height:84px;border-radius:50%;margin:auto;display:block;border:3px solid var(--gold)}
+.mut{color:var(--mut);font-size:12px}.warn{background:#fff4d6;border:1px solid var(--gold);border-radius:12px;padding:10px;font-size:13px;margin-bottom:10px;color:#4a3a00}
+iframe{border:0;width:100%;height:calc(100dvh - 60px - env(safe-area-inset-top,0px));display:block;background:#fff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row label{font-size:13px}
+.row input[type=checkbox]{width:18px;margin:0}.pill{font-size:11px;padding:2px 8px;border-radius:10px;background:#e8f0f1;color:var(--pri)}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0f1719;--card:#182326;--ink:#e8f0f1;--mut:#8ea2a7;--line:#27373b;--pri:#1d6b80}.warn{background:#3a3010;color:#f1dd9a}button.g2,.pill{background:#223539;color:#bfe3ec}}
+
+.net{font-size:11px;padding:4px 9px;border-radius:99px;background:#ffffff26;white-space:nowrap}
+</style></head><body>
+<div id="app"></div>
+<script>
+/* ===== 1. PASTE YOUR FIREBASE CONFIG HERE (Firebase Console → Project settings → Your apps → Web) ===== */
+const FB={apiKey:"AIzaSyCbo8DJVRteKUyy3YKgfZ9fBvKbWaIJv7k",authDomain:"waithaka-hub.firebaseapp.com",projectId:"waithaka-hub",storageBucket:"waithaka-hub.firebasestorage.app",messagingSenderId:"1038198197395",appId:"1:1038198197395:web:dc1435ba795e0cc3285166"};
+/* ========================================================================================================= */
+let db=null;try{if(FB.projectId&&window.firebase){firebase.initializeApp(FB);db=firebase.firestore();db.settings({experimentalAutoDetectLongPolling:true});db.enablePersistence({synchronizeTabs:true}).catch(()=>{})}}catch(e){db=null}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,8);
+const defaults=()=>({roles:[
+{id:'admin',name:'Administrator',pin:'0000',perms:{},exp:1},
+{id:'family',name:'Family',pin:'1111',perms:{uthoni:'edit',construction:'edit',coffee:'edit',calendar:'edit',vault:'edit',word:'edit'},exp:1},
+{id:'guest',name:'Guest',pin:'2222',perms:{},exp:0}],
+tiles:[
+{id:'uthoni',name:'Ūthoni Dowry Ledger',d:'Budget, payments, debts',e:'🐐',g:'Family',url:'uthoni/index.html',sync:1},
+{id:'construction',name:'House Construction',d:'Materials & costs by stage',e:'🏠',g:'Home & Farm',url:''},
+{id:'coffee',name:'Coffee Farm Manager',d:'Manage the coffee farm',e:'☕',g:'Home & Farm',url:''},
+{id:'calendar',name:'My Calendar',d:'Notes, events, reminders',e:'📅',g:'Family',url:''},
+{id:'vault',name:'Family Vault',d:'Family documents',e:'🗂️',g:'Family',url:''},
+{id:'word',name:'Living Word',d:'Sermons & scripture notes',e:'📖',g:'Faith',url:''}]});
+const LK='wfh-settings';let cfg;try{cfg=JSON.parse(localStorage.getItem(LK))}catch(e){}if(!cfg||!cfg.roles)cfg=defaults();
+function mig(){cfg.roles.forEach(r=>{if(!r.perms){r.perms={};(r.mods||[]).forEach(m=>r.perms[m]='edit');r.exp=(r.mods||[]).length?1:0}delete r.mods})}mig();
+const CP='wfh-cfg-pending';
+const pushCfg=()=>{if(!db)return;db.doc('meta/settings').set({json:JSON.stringify(cfg)}).then(()=>{try{localStorage.removeItem(CP)}catch(e){}netUI()}).catch(()=>{})};
+const saveCfg=()=>{try{localStorage.setItem(LK,JSON.stringify(cfg));localStorage.setItem(CP,'1')}catch(e){}pushCfg();netUI()};
+if(db)db.doc('meta/settings').get().then(s=>{if(localStorage.getItem(CP)){pushCfg();return}if(s.exists){try{cfg=JSON.parse(s.data().json);mig();localStorage.setItem(LK,JSON.stringify(cfg));if(!U)render()}catch(e){}}}).catch(()=>{});
+let U=null,V='home',M=null,idle,syncT;
+const isAdmin=()=>U&&U.id==='admin';const lvl=t=>isAdmin()?'full':((U&&U.perms&&U.perms[t.id])||'none');const can=t=>lvl(t)!=='none';const LN={view:'View only',edit:'View & edit',full:'Full access'};
+function bump(){clearTimeout(idle);if(U)idle=setTimeout(logout,15*60*1000)}
+['click','touchstart','keydown'].forEach(e=>addEventListener(e,bump,{passive:true}));
+function logout(){if(M)syncOut();clearInterval(syncT);U=null;V='home';M=null;render()}
+function login(){const r=cfg.roles.find(x=>x.id===document.getElementById('lr').value),p=document.getElementById('lp').value;
+if(r&&r.pin&&p===r.pin){U=r;V='home';bump();render()}else{document.getElementById('le').textContent='Wrong PIN — try again';document.getElementById('lp').value=''}}
+function render(){render0();netUI()}
+function render0(){const a=document.getElementById('app');
+if(!U){a.innerHTML=`<main><div class="lg"><img class="logo" src="icon-192.png" alt=""><h1 style="margin:12px 0 2px">Waithaka Family Hub</h1><p class="mut" style="margin-top:0">${db?(navigator.onLine?'Cloud sync on':'Offline — changes upload when you reconnect'):'Offline mode — add Firebase config to sync'}</p>
+<select id="lr">${cfg.roles.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select>
+<input id="lp" type="password" inputmode="numeric" placeholder="PIN" onkeydown="if(event.key==='Enter')login()"><button class="b" onclick="login()">Enter</button><p id="le" class="mut" style="color:#b3261e"></p></div></main>`;return}
+const hd=`<header>${V!=='home'?'<button onclick="back()">←</button>':''}<h1>${V==='mod'?esc(M.name):V==='set'?'Settings':'Waithaka Family Hub'}<small>${esc(U.name)}${V==='mod'&&LN[lvl(M)]?' · '+LN[lvl(M)]:''}</small></h1><span id="net" class="net"></span>${isAdmin()&&V==='home'?'<button onclick="V=\'set\';render()">⚙</button>':''}<button onclick="logout()">⎋</button></header>`;
+if(V==='mod'){a.innerHTML=hd+(M.url?`<iframe src="${esc(M.url+(M.sync?(M.url.includes('?')?'&':'?')+'perm='+lvl(M)+'&x='+((isAdmin()||U.exp)?1:0):''))}"></iframe>`:'');return}
+if(V==='set'){a.innerHTML=hd+`<main>${settings()}</main>`;return}
+const ts=cfg.tiles.filter(can),gs={};ts.forEach(t=>(gs[t.g||'Other']=gs[t.g||'Other']||[]).push(t));
+const warn=isAdmin()&&cfg.roles.some(r=>['0000','1111','2222'].includes(r.pin))?'<div class="warn">Default PINs are still in use. Open ⚙ Settings and change them.</div>':'';
+a.innerHTML=hd+`<main>${warn}${Object.keys(gs).map(g=>`<h2>${esc(g)}</h2><div class="g">${gs[g].map(t=>`<div class="t" onclick="openT('${t.id}')"><i>${esc(t.e||'📱')}</i><b>${esc(t.name)}</b><span>${t.url?esc(t.d):'Link not set'}</span></div>`).join('')}</div>`).join('')||'<p class="mut">No apps have been shared with this role yet.</p>'}</main>`}
+function back(){if(M)syncOut();clearInterval(syncT);V='home';M=null;render()}
+/* ---- ledger sync: copies the ledger's saved data to/from Firestore ---- */
+const LSK='uthoni-ledger-v1',PK=LSK+'-pushed';let inflight=0;
+const lts=()=>+localStorage.getItem(LSK+'-ts')||0;
+const pend=()=>lts()>(+localStorage.getItem(PK)||0);
+const anyPend=()=>pend()||!!localStorage.getItem(CP);
+async function syncIn(){if(!db||!navigator.onLine)return;try{const s=await Promise.race([db.doc('family/uthoni').get({source:'server'}),new Promise((_,r)=>setTimeout(r,6000))]);if(s.exists){const c=s.data();if(c.ts>lts()){localStorage.setItem(LSK,c.json);localStorage.setItem(LSK+'-ts',c.ts);localStorage.setItem(PK,c.ts)}}}catch(e){}}
+function syncOut(){if(!db||!pend())return;const ts=lts(),json=localStorage.getItem(LSK);if(inflight>=ts)return;inflight=ts;netUI();
+db.doc('family/uthoni').set({json,ts}).then(()=>{try{localStorage.setItem(PK,Math.max(ts,+localStorage.getItem(PK)||0))}catch(e){}netUI()}).catch(()=>{inflight=0;netUI()})}
+function netUI(){const n=document.getElementById('net');if(!n)return;
+n.textContent=!db?'📴 This device':!navigator.onLine?(anyPend()?'📴 Offline · will upload':'📴 Offline'):anyPend()?'⏳ Uploading…':'☁ Synced'}
+async function flush(){if(!db||!navigator.onLine)return;if(pend()&&!M)await syncIn();syncOut();if(localStorage.getItem(CP))pushCfg();netUI()}
+addEventListener('online',()=>{flush();netUI()});addEventListener('offline',netUI);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)flush()});
+setInterval(flush,20000);setTimeout(flush,1500);
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
+async function openT(id){const t=cfg.tiles.find(x=>x.id===id);if(!t.url){if(isAdmin()){V='set';render()}else alert('This app’s link has not been set yet.');return}
+if(t.sync)await syncIn();M=t;V='mod';render();if(t.sync){clearInterval(syncT);syncT=setInterval(syncOut,8000)}}
+/* ---- settings (administrator) ---- */
+function settings(){const opts=(v)=>[['none','No access'],['view','View only'],['edit','View & edit'],['full','Full (edit + delete)']].map(o=>`<option value="${o[0]}" ${v===o[0]?'selected':''}>${o[1]}</option>`).join('');
+return`<div class="card"><h2 style="margin-top:0">Roles, PINs &amp; rights</h2><p class="mut">Pick what each role can do in every app. <b>View</b> = read only · <b>Edit</b> = add and change · <b>Full</b> = also delete and reset. “Can export” allows PDF and backup downloads.</p>${cfg.roles.map((r,i)=>`<div style="border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:12px"><div class="two"><div><span class="mut">Role name</span><input value="${esc(r.name)}" onchange="cfg.roles[${i}].name=this.value;saveCfg()"></div><div><span class="mut">PIN</span><input value="${esc(r.pin)}" inputmode="numeric" onchange="cfg.roles[${i}].pin=this.value.trim();saveCfg()"></div></div>
+${r.id==='admin'?'<span class="pill">Full rights in every app, plus Settings</span>':`${cfg.tiles.map(t=>`<div class="row" style="justify-content:space-between;margin:4px 0"><span style="flex:1;min-width:0">${esc(t.name)}${t.sync?'':' *'}</span><select style="width:165px;margin:0" onchange="setP(${i},'${t.id}',this.value)">${opts((r.perms||{})[t.id]||'none')}</select></div>`).join('')}
+<label class="row" style="margin-top:8px"><input type="checkbox" ${r.exp?'checked':''} onchange="cfg.roles[${i}].exp=this.checked?1:0;saveCfg()">Can export (PDF, backups)</label>
+<button class="g2" style="margin-top:8px" onclick="if(confirm('Remove this role?')){cfg.roles.splice(${i},1);saveCfg();render()}">Remove role</button>`}</div>`).join('')}
+<p class="mut">* Rights are enforced inside apps built into the hub (the Ūthoni ledger). Other apps open fully for any role with access.</p>
+<button class="g2" onclick="cfg.roles.push({id:uid(),name:'New role',pin:'',perms:{},exp:0});saveCfg();render()">+ Add role</button></div>
+<div class="card"><h2 style="margin-top:0">App tiles</h2><p class="mut">Paste each app’s live link (GitHub Pages address) to switch its tile on.</p>${cfg.tiles.map((t,i)=>`<div style="border-bottom:1px solid var(--line);margin-bottom:8px"><div class="two"><input value="${esc(t.name)}" placeholder="Name" onchange="cfg.tiles[${i}].name=this.value;saveCfg()"><input value="${esc(t.e)}" placeholder="Emoji" maxlength="2" onchange="cfg.tiles[${i}].e=this.value;saveCfg()"></div>
+<input value="${esc(t.url)}" placeholder="https://…" inputmode="url" onchange="cfg.tiles[${i}].url=this.value.trim();saveCfg()"><div class="two"><input value="${esc(t.g)}" placeholder="Section" onchange="cfg.tiles[${i}].g=this.value;saveCfg()"><input value="${esc(t.d)}" placeholder="Description" onchange="cfg.tiles[${i}].d=this.value;saveCfg()"></div>
+<button class="g2" style="margin-bottom:10px" onclick="if(confirm('Remove this tile?')){cfg.tiles.splice(${i},1);saveCfg();render()}">Remove tile</button></div>`).join('')}
+<button class="g2" onclick="cfg.tiles.push({id:uid(),name:'New app',d:'',e:'📱',g:'Family',url:''});saveCfg();render()">+ Add tile</button></div>
+<div class="card"><h2 style="margin-top:0">Cloud</h2><p class="mut">${db?'Connected to Firebase project “'+esc(FB.projectId)+'”. Settings and the Ūthoni ledger sync between devices.':'Not connected. Paste your Firebase config at the top of index.html to sync between phones.'}</p></div>`}
+function setP(i,id,v){const r=cfg.roles[i];r.perms=r.perms||{};r.perms[id]=v;saveCfg()}
+if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+render();
+</script></body></html>
